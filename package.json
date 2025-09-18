@@ -2,26 +2,41 @@
   "name": "onchain-profile",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.6.5",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "contracts:compile": "HARDHAT_TSCONFIG=tsconfig.hardhat.json hardhat compile --config ./hardhat.config.ts",
+    "contracts:deploy": "HARDHAT_TSCONFIG=tsconfig.hardhat.json hardhat run scripts/deploy.ts --config ./hardhat.config.ts",
+    "contracts:deploy:sepolia": "HARDHAT_TSCONFIG=tsconfig.hardhat.json hardhat run scripts/deploy.ts --network sepolia --config ./hardhat.config.ts"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.89.0",
+    "next": "15.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.3"
+    "viem": "^2.37.6",
+    "wagmi": "^2.16.9",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@nomicfoundation/hardhat-viem": "^3.0.0",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "dotenv": "^17.2.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
-    "@eslint/eslintrc": "^3"
+    "hardhat": "^3.0.6",
+    "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }

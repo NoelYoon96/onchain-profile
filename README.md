@@ -3,10 +3,10 @@
 ENS 스타일 온체인 명함을 빠르게 실험할 수 있는 Next.js 기반 MVP입니다. 지갑으로 서명한 프로필을 등록하고 ENS 주소/이더리움 주소로 다른 사용자를 탐색할 수 있습니다.
 
 ## 주요 기능
-- **지갑 연결 & 상태 표시**: wagmi + React Query 기반으로 메타마스크 등 인젝션 지갑을 연결하고 ENS 이름을 자동으로 표시합니다.
-- **서명 기반 프로필 발행**: 프로필을 저장할 때 지갑에서 메시지 서명을 생성하여 서버가 작성자 주소를 검증합니다. 5분 이내 서명만 허용해 재사용 공격을 방지합니다.
+- **지갑 연결 & 상태 표시**: wagmi 기반으로 메타마스크 등 인젝션 지갑을 연결하고 ENS 이름을 자동으로 표시합니다.
+- **온체인 프로필 발행**: 사용자가 지갑에서 직접 `ProfileRegistry` 컨트랙트에 트랜잭션을 전송해 프로필을 갱신합니다.
 - **ENS/주소 검색**: 0x 주소뿐 아니라 `vitalik.eth` 같은 ENS 이름도 조회해 프로필을 불러옵니다.
-- **스토리지 추상화**: 현재는 파일(`data/profiles.json`)에 저장하지만, 저장소 인터페이스를 통해 스마트컨트랙트 등 다른 백엔드로 쉽게 교체할 수 있습니다.
+- **온체인 ProfileRegistry**: Hardhat으로 배포한 컨트랙트에 직접 쓰고 읽습니다. 프런트는 wagmi `writeContract`로 트랜잭션을 발생시키고, 서버 API는 조회를 위해 컨트랙트를 호출합니다.
 
 ## 빠른 시작
 ```bash
@@ -54,15 +54,15 @@ pnpm dev
 
    `--network` 플래그를 바꿔 다른 네트워크도 지정할 수 있습니다.
 
-배포 후 반환된 컨트랙트 주소를 `.env.local`의 `NEXT_PUBLIC_PROFILE_CONTRACT`에 기록해 두면 추후 온체인 연동 작업에서 재사용할 수 있습니다.
+배포 후 반환된 컨트랙트 주소를 `.env.local`의 `NEXT_PUBLIC_PROFILE_CONTRACT`에 기록하면 프런트엔드가 해당 온체인 데이터를 바로 사용합니다.
 
 ## 개발 메모
-- 프로필 저장 시 지갑에서 서명한 `OnchainProfile:{address}:{signedAt}:{hash}` 메시지를 전송합니다. 서버는 `viem`을 사용해 서명을 복구하고, 5분 내 요청인지 확인한 뒤 데이터를 저장합니다.
+- `ProfileRegistry` 컨트랙트의 `upsertProfile`을 호출해 데이터를 저장합니다. 저장 구조는 `contracts/ProfileRegistry.sol`에서 확인할 수 있습니다.
 - ENS 해석은 Cloudflare 메인넷 엔드포인트를 사용하는 `viem` public client로 처리합니다. 프로덕션에서는 전용 RPC나 캐시 계층을 붙이는 것을 권장합니다.
-- 파일 스토리지 구현은 `src/server/profile-repository.ts`에서 추상화되어 있습니다. 동일한 인터페이스로 온체인 컨트랙트 연동 버전을 구현할 수 있습니다.
+- `src/server/profile-repository.ts`는 viem public client를 사용해 컨트랙트에서 프로필을 조회합니다.
 - 모든 프로필에는 `version` 필드가 포함되며 현재 스키마 버전은 `PROFILE_SCHEMA_VERSION`(`src/lib/validation.ts`)에서 관리됩니다.
 
 ## 다음 단계 아이디어
-1. 파일 스토리지를 스마트컨트랙트 호출로 교체하고, 조회 역시 온체인 인덱서/그래프 서비스를 활용합니다.
+1. 컨트랙트 이벤트를 인덱싱하거나 The Graph/Supabase 등을 붙여 조회를 캐싱하면 검색 성능을 높일 수 있습니다.
 2. 프로필 레코드에 소셜 그래프(팔로우, 추천인) 정보를 추가하여 확장합니다.
 3. ENS 아바타, Lens/Primary ENS 등과 연동하여 더 풍부한 온체인 아이덴티티를 구성합니다.
